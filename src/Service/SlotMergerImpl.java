@@ -14,6 +14,8 @@ public class SlotMergerImpl implements SlotMergerInterface {
     ArrayList<Slot> slots = new ArrayList<>();
     ArrayList<Slot> availabilitySlots = new ArrayList<>();
 
+    int latestEnd;
+
     public ArrayList<SlotResult> mergePersonAvailabilities(ArrayList<Person> persons) {
         for (Person person : persons) {
             slots.addAll(person.getSlots());
@@ -26,12 +28,12 @@ public class SlotMergerImpl implements SlotMergerInterface {
         Collections.sort(slots);
 
         System.out.println("Amount of slots " + slots.size());
-     /*   while (slots.size() > 0) {
-            Slot earliestEnd = findEarliestEnd();
+        latestEnd = findEarliestStart().getStart();
 
-            setSlotResults(earliestEnd.getEnd(), findEarliestEnd().getEnd());
-        }*/
-        setSlotResults(findEarliestStart().getStart(), findEarliestEnd().getEnd()); //earliest start will be 0 most of the time
+        while (slots.size() > 0) {
+            setSlotResults(latestEnd, findEarliestEnd().getEnd());
+        }
+      //  setSlotResults(findEarliestStart().getStart(), findEarliestEnd().getEnd()); //earliest start will be 0 most of the time
         return slotResults;
     }
 
@@ -43,7 +45,7 @@ public class SlotMergerImpl implements SlotMergerInterface {
                 result.setAvailablePersons(findAvailablePersons(start, end));
                 slotResults.add(result);
             }
-            setSlotResults(end, earliestEnd.getEnd());
+            latestEnd = end;
         }
     }
 
@@ -73,8 +75,8 @@ public class SlotMergerImpl implements SlotMergerInterface {
     HashSet<Person> findAvailablePersons(int start, int end) {
         HashSet<Person> availablePersons = new HashSet<>();
         for (Slot availabilitySlot : availabilitySlots) {
-            if ((start >= availabilitySlot.getStart() && start < availabilitySlot.getEnd())
-                    || end <= availabilitySlot.getStart() && end > availabilitySlot.getEnd()) {
+            if ((start < availabilitySlot.getEnd()
+                    && availabilitySlot.getStart() <= end)) {
                 availablePersons.add(availabilitySlot.getPerson());
             }
         }
