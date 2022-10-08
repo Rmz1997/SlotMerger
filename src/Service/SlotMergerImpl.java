@@ -5,7 +5,6 @@ import Domain.Slot;
 import Domain.SlotResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -14,9 +13,10 @@ public class SlotMergerImpl implements SlotMergerInterface {
     ArrayList<Slot> slots = new ArrayList<>();
     ArrayList<Slot> availabilitySlots = new ArrayList<>();
 
-    int latestEnd;
+    int newStart;
 
     public ArrayList<SlotResult> mergePersonAvailabilities(ArrayList<Person> persons) {
+
         for (Person person : persons) {
             slots.addAll(person.getSlots());
             for (Slot slot : person.getSlots()) {
@@ -28,12 +28,15 @@ public class SlotMergerImpl implements SlotMergerInterface {
         Collections.sort(slots);
 
         System.out.println("Amount of slots " + slots.size());
-        latestEnd = findEarliestStart().getStart();
+        newStart = findEarliestStart().getStart();
 
         while (slots.size() > 0) {
-            setSlotResults(latestEnd, findEarliestEnd().getEnd());
+            int end = findEarliestEnd().getEnd();
+            setSlotResults(newStart, end);
+            if (newStart == findLatestEnd().getEnd()) {
+                break;
+            }
         }
-      //  setSlotResults(findEarliestStart().getStart(), findEarliestEnd().getEnd()); //earliest start will be 0 most of the time
         return slotResults;
     }
 
@@ -45,7 +48,7 @@ public class SlotMergerImpl implements SlotMergerInterface {
                 result.setAvailablePersons(findAvailablePersons(start, end));
                 slotResults.add(result);
             }
-            latestEnd = end;
+            newStart = end;
         }
     }
 
@@ -63,24 +66,29 @@ public class SlotMergerImpl implements SlotMergerInterface {
     }
 
     Slot findEarliestEnd() {
-        if (slots.size() == 0) {return null;}
-        Slot smallest = slots.get(0);
-        try {
-            slots.remove(0);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        if (slots.size() == 0) {
+            return null;
         }
+        Slot smallest = slots.get(0);
+        slots.remove(0);
         return smallest;
     }
+
+    Slot findLatestEnd() {
+        if (slots.size() == 0) {
+            return null;
+        }
+        return slots.get(slots.size() - 1);
+    }
+
     HashSet<Person> findAvailablePersons(int start, int end) {
         HashSet<Person> availablePersons = new HashSet<>();
         for (Slot availabilitySlot : availabilitySlots) {
             if ((start < availabilitySlot.getEnd()
-                    && availabilitySlot.getStart() <= end)) {
+                    && availabilitySlot.getStart() < end)) {
                 availablePersons.add(availabilitySlot.getPerson());
             }
         }
         return availablePersons;
     }
-
 }
