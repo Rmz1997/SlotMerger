@@ -9,16 +9,16 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
-        //testSimple();
-        testBulk(2000,86400,5000);
+        testSimple();
+       //testBulk(2000,86400,400);
     }
 
     static void testSimple() {
         ArrayList<Person> people = new ArrayList<>();
-        Person p1 = SlotGenerator.randomizePerson("Remz", 20, 10);
-        Person p2 = SlotGenerator.randomizePerson("Sander", 20, 10);
-        Person p3 = SlotGenerator.randomizePerson("Gerard", 20, 10);
-        Person p4 = SlotGenerator.randomizePerson("Robin", 20, 10);
+        Person p1 = SlotGenerator.randomizePerson("Remz", 10, 10);
+        Person p2 = SlotGenerator.randomizePerson("Sander", 10, 10);
+        Person p3 = SlotGenerator.randomizePerson("Gerard", 10, 10);
+        Person p4 = SlotGenerator.randomizePerson("Robin", 10, 10);
         people.add(p1);
         people.add(p2);
         people.add(p3);

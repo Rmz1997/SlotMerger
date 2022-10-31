@@ -4,8 +4,10 @@ import Domain.Person;
 import Domain.Slot;
 import Domain.SlotResult;
 
+import javax.sql.rowset.Predicate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class SlotMergerImpl implements SlotMergerInterface {
@@ -13,14 +15,17 @@ public class SlotMergerImpl implements SlotMergerInterface {
     ArrayList<Slot> slots = new ArrayList<>();
     ArrayList<Slot> availabilitySlots = new ArrayList<>();
 
+    HashMap<Integer, HashSet<Person>> personPerAvailableTime = new HashMap<>();
     int newStart;
 
     public ArrayList<SlotResult> mergePersonAvailabilities(ArrayList<Person> persons) {
-
+        int counter = 0;
         for (Person person : persons) {
             slots.addAll(person.getSlots());
+
             for (Slot slot : person.getSlots()) {
                 if (slot.isAvailable()) {
+                    counter++;
                     availabilitySlots.add(slot);
                 }
             }
@@ -37,6 +42,9 @@ public class SlotMergerImpl implements SlotMergerInterface {
                 break;
             }
         }
+
+
+        //slotResults.forEach(slres -> slres.setAvailablePersons(findAvailablePersons(slres.getStart(), slres.getEnd())));
         return slotResults;
     }
 
@@ -45,6 +53,7 @@ public class SlotMergerImpl implements SlotMergerInterface {
         if (earliestEnd != null) {
             if (start != end) {
                 SlotResult result = new SlotResult(start, end);
+              //  result.setAvailablePersons(personPerAvailableTime.get(start));
                 result.setAvailablePersons(findAvailablePersons(start, end));
                 slotResults.add(result);
             }
@@ -83,12 +92,8 @@ public class SlotMergerImpl implements SlotMergerInterface {
 
     HashSet<Person> findAvailablePersons(int start, int end) {
         HashSet<Person> availablePersons = new HashSet<>();
-        for (Slot availabilitySlot : availabilitySlots) {
-            if ((start < availabilitySlot.getEnd()
-                    && availabilitySlot.getStart() < end)) {
-                availablePersons.add(availabilitySlot.getPerson());
-            }
-        }
+        availabilitySlots.stream().filter(a -> (start < a.getEnd() && a.getStart() < end)).forEach(e -> availablePersons.add(e.getPerson()));
+
         return availablePersons;
     }
 }
